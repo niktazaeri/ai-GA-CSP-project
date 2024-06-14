@@ -15,52 +15,21 @@ class SudokuCSPController:
         def sudoku_constraints(A, a, B, b):
             return a != b
 
-        def AC3(csp, queue=None):
-            if queue is None:
-                queue = [(Xi, Xk) for Xi in csp['variables'] for Xk in csp['neighbors'][Xi]]
-            support_pruning(csp)
-            while queue:
-                (Xi, Xj) = queue.pop()
-                if revise(csp, Xi, Xj):
-                    if not csp['curr_domains'][Xi]:
-                        return False
-                    for Xk in csp['neighbors'][Xi]:
-                        if Xk != Xi:
-                            queue.append((Xk, Xi))
-            return True
-
-        def revise(csp, Xi, Xj):
-            revised = False
-            for x in csp['curr_domains'][Xi][:]:
-                if all(not sudoku_constraints(Xi, x, Xj, y) for y in csp['curr_domains'][Xj]):
-                    csp['curr_domains'][Xi].remove(x)
-                    revised = True
-            return revised
-
-        def support_pruning(csp):
-            if csp['curr_domains'] is None:
-                csp['curr_domains'] = {v: list(csp['domains'][v]) for v in csp['variables']}
-
-        def first_unassigned_variable(assignment, csp):
-            for var in csp['variables']:
-                if var not in assignment:
-                    return var
-
         def mrv(assignment, csp):
             unassigned_vars = [v for v in csp['variables'] if v not in assignment]
-            return min(unassigned_vars, key=lambda var: len(csp['curr_domains'][var]))
+            return min(unassigned_vars, key=lambda var: len(csp['domains'][var]))
 
         def lcv(var, assignment, csp):
-            return sorted(csp['curr_domains'][var], key=lambda val: sum(1 for neighbor in csp['neighbors'][var] if val in csp['curr_domains'][neighbor]))
+            return sorted(csp['domains'][var], key=lambda val: sum(1 for neighbor in csp['neighbors'][var] if val in csp['domains'][neighbor]))
 
         def forward_checking(csp, var, value, assignment):
-            csp['curr_domains'][var] = [value]
+            csp['domains'][var] = [value]
             for neighbor in csp['neighbors'][var]:
                 if neighbor not in assignment:
-                    for val in csp['curr_domains'][neighbor][:]:
+                    for val in csp['domains'][neighbor][:]:
                         if not sudoku_constraints(var, value, neighbor, val):
-                            csp['curr_domains'][neighbor].remove(val)
-                    if not csp['curr_domains'][neighbor]:
+                            csp['domains'][neighbor].remove(val)
+                    if not csp['domains'][neighbor]:
                         return False
             return True
 
@@ -73,11 +42,7 @@ class SudokuCSPController:
                     if 0 == sum(1 for neighbor in csp['neighbors'][var] if value == assignment.get(neighbor)):
                         assignment[var] = value
                         if forward_checking(csp, var, value, assignment):
-                            print_grid(assignment)  # چاپ وضعیت فعلی پازل
-                            self.view.draw_numbers(self.model.get_grid())  # رسم اعداد روی پازل
-                            pygame.display.update()
-                            time.sleep(0.5)  # اضافه کردن تاخیر برای نمایش بهتر
-
+                            self.update_view(assignment)  # به روز رسانی ویو
                             result = backtrack(assignment)
                             if result is not None:
                                 return result
@@ -86,17 +51,7 @@ class SudokuCSPController:
 
             return backtrack({})
 
-        def print_grid(assignment):
-            temp_grid = [[0 for _ in range(9)] for _ in range(9)]
-            for (r, c), v in assignment.items():
-                temp_grid[r][c] = v
-            for row in temp_grid:
-                print(row)
-            print("\n")
-
-        csp = {'variables': variables, 'domains': domains, 'neighbors': neighbors, 'curr_domains': None}
-        support_pruning(csp)
-        AC3(csp)
+        csp = {'variables': variables, 'domains': domains, 'neighbors': neighbors}
         solution = backtracking_search(csp)
 
         if solution:
@@ -106,6 +61,21 @@ class SudokuCSPController:
             print("Sudoku solved successfully!")
         else:
             print("No solution found for the Sudoku puzzle.")
+
+    def update_view(self, assignment):
+        temp_grid = [[0 for _ in range(9)] for _ in range(9)]
+        for (r, c), v in assignment.items():
+            temp_grid[r][c] = v
+        self.model.set_grid(temp_grid)
+        self.view.draw_numbers(self.model.get_grid())
+        pygame.display.update()
+
+        # چاپ وضعیت فعلی پازل در ترمینال
+        for row in temp_grid:
+            print(row)
+        print("\n")
+
+        time.sleep(0.5)  # اضافه کردن تاخیر برای نمایش بهتر
 
     def get_neighbors(self, row, col):
         neighbors = set()

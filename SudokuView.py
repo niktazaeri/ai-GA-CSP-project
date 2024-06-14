@@ -27,7 +27,7 @@ class SudokuView:
         for i in range(0, 10):
             line_width = 3 if i % 3 == 0 else 1
             pygame.draw.line(self.screen, BLUE, (0, i * block_size), (self.WIDTH, i * block_size), line_width)
-            pygame.draw.line(self.screen, BLUE, (i * block_size, 0), (i * block_size, self.HEIGHT - 60), line_width)
+            pygame.draw.line(self.screen, BLUE, (i * block_size, 0), (i * block_size, self.HEIGHT - 120), line_width)
 
     def draw_numbers(self, grid):
         font = pygame.font.SysFont(None, 55)
@@ -40,15 +40,15 @@ class SudokuView:
                     pygame.draw.rect(self.screen, LIGHT_GRAY, text_rect)  # پاک کردن پس زمینه قبل از رسم عدد
                     self.screen.blit(text, text_rect)
 
-    def draw_button(self):
-        button_rect = pygame.Rect(self.WIDTH // 4, self.HEIGHT - 50, self.WIDTH // 2, 40)
+    def draw_genetic_button(self):
+        button_rect = pygame.Rect(self.WIDTH // 4, self.HEIGHT - 100, self.WIDTH // 2, 40)
         mouse_pos = pygame.mouse.get_pos()
         if button_rect.collidepoint(mouse_pos):
             color = BUTTON_HOVER_COLOR
         else:
             color = BUTTON_COLOR
         pygame.draw.rect(self.screen, color, button_rect)
-        font = pygame.font.SysFont(None, 30)
+        font = pygame.font.SysFont(None, 25)
         text = font.render("Solve with Genetic Algorithm", True, WHITE)
         shadow = font.render("Solve with Genetic Algorithm", True, SHADOW_COLOR)
 
@@ -58,3 +58,22 @@ class SudokuView:
         self.screen.blit(shadow, shadow_rect)
         self.screen.blit(text, text_rect)
         return button_rect
+
+    def draw_csp_button(self):
+        csp_button_rect = pygame.Rect(self.WIDTH // 4, self.HEIGHT - 50, self.WIDTH // 2, 40)
+        mouse_pos = pygame.mouse.get_pos()
+        if csp_button_rect.collidepoint(mouse_pos):
+            color = BUTTON_HOVER_COLOR
+        else:
+            color = BUTTON_COLOR
+        pygame.draw.rect(self.screen, color, csp_button_rect)
+        font = pygame.font.SysFont(None, 25)
+        text = font.render("Solve with CSP", True, WHITE)
+        shadow = font.render("Solve with CSP", True, SHADOW_COLOR)
+
+        text_rect = text.get_rect(center=csp_button_rect.center)
+        shadow_rect = shadow.get_rect(center=(csp_button_rect.centerx + 2, csp_button_rect.centery + 2))
+
+        self.screen.blit(shadow, shadow_rect)
+        self.screen.blit(text, text_rect)
+        return csp_button_rect

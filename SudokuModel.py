@@ -14,3 +14,6 @@ class SudokuModel:
 
     def get_grid(self):
         return self.grid
+
+    def set_grid(self, grid):
+        self.grid = grid

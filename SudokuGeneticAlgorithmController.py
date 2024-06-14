@@ -13,7 +13,7 @@ class SudokuGeneticAlgorithmController:
 
     def _solve_sudoku_genetically(self, grid):
         population_size = 300  # اندازه جمعیت اولیه
-        mutation_rate = 0.2
+        mutation_rate = 0.15
         generations = 1000
 
         def create_individual():
